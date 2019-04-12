@@ -23,7 +23,14 @@ router.post('/', (req, res) => {
       .status(422)
       .json({ message: 'Please include `genre` and `title` properties.' });
   } else {
-    gamesList.push(req.body)
+    for (let game of gamesList) {
+      if (game.title === req.body.title) {
+        return res
+          .status(405)
+          .json({ message: `Unique title constraint failed.` });
+      }
+    }
+    gamesList.push(req.body);
     res.status(201).json(gamesList[gamesList.length - 1]);
   }
 });

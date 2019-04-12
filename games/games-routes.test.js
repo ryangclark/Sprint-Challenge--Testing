@@ -47,6 +47,16 @@ describe('Games Routes', async () => {
           genre: 'Arcade',
           releaseYear: 1980
         });
+
+      expect(pacman).toHaveProperty('status', 201);
+      expect(pacman).toHaveProperty('type', 'application/json');
+      expect(pacman.body).toHaveProperty('title', 'Pacman');
+      expect(pacman.body).toHaveProperty('genre', 'Arcade');
+      expect(pacman.body).toHaveProperty('releaseYear', 1980);
+      expect(Array.isArray(pacman.body)).toBe(false);
+    });
+
+    it('Rejects a POST without required properties with status 422', async () => {
       const failure = await request(server)
         .post('/api/games')
         .send({
@@ -55,15 +65,21 @@ describe('Games Routes', async () => {
           releaseYear: 2000
         });
 
-      expect(pacman).toHaveProperty('status', 201);
-      expect(pacman).toHaveProperty('type', 'application/json');
-      expect(pacman.body).toHaveProperty('title', 'Pacman');
-      expect(pacman.body).toHaveProperty('genre', 'Arcade');
-      expect(pacman.body).toHaveProperty('releaseYear', 1980);
-      expect(Array.isArray(pacman.body)).toBe(false);
-
       expect(failure).toHaveProperty('status', 422);
       expect(failure.body).toHaveProperty('message');
+    });
+
+    it('Rejects a POST if `title` is already persisted', async () => {
+      const repeated = await request(server)
+        .post('/api/games')
+        .send({
+          title: 'Pacman',
+          genre: 'Arcade',
+          releaseYear: 1982
+        });
+      
+      expect(repeated).toHaveProperty('status', 405);
+      expect(repeated.body).toHaveProperty('message');
     });
   });
 });
